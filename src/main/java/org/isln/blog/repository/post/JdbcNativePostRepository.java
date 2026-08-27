@@ -90,7 +90,7 @@ public class JdbcNativePostRepository implements PostRepository {
                 new String[]{ID}
         );
         ps.setString(1, post.getTitle());
-        ps.setString(2, post.getTitle());
+        ps.setString(2, post.getText());
         ps.setString(3, jsonMapper.writeValueAsString(post.getTags()));
         return ps;
     }
