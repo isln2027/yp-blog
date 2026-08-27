@@ -1,8 +1,6 @@
-package org.isln.blog.service;
+package org.isln.blog.repository;
 
 import javax.sql.DataSource;
-
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -12,10 +10,11 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class DataBasePopulator {
-    @Value("classpath:schema.sql")
     private final Resource schema;
+    public DataBasePopulator(@Value("classpath:schema.sql") Resource schema) {
+        this.schema = schema;
+    }
 
     @EventListener
     public void populate(ContextRefreshedEvent event) {
