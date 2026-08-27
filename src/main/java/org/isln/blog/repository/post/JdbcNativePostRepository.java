@@ -37,7 +37,7 @@ public class JdbcNativePostRepository implements PostRepository {
         int limit = parameters.pageSize();
         int offset = parameters.pageNumber() * limit;
         // todo implement search
-        return jdbcTemplate.query(query, this::map, parameters.pageSize(), limit, offset);
+        return jdbcTemplate.query(query, this::map, limit, offset);
     }
 
     @Override
