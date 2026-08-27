@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
+import org.isln.blog.exceptions.ObjectNotFound;
 import org.isln.blog.exceptions.RepositoryException;
 import org.isln.blog.model.Post;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -42,7 +43,11 @@ public class JdbcNativePostRepository implements PostRepository {
 
     @Override
     public Post findById(long id) {
-        return jdbcTemplate.queryForObject(queryById(), this::map, id);
+        // todo process non-existent posts?
+        return jdbcTemplate.query(queryById(), this::map, id)
+                .stream()
+                .findAny()
+                .orElseThrow(() -> new ObjectNotFound("Post with id '" + id + " not found"));
     }
 
     @Override
