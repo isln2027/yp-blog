@@ -10,5 +10,5 @@ CREATE TABLE if NOT EXISTS posts(
 CREATE TABLE if NOT EXISTS comments(
   id bigserial PRIMARY KEY,
   text text NOT NULL,
-  post_id bigint NOT NULL REFERENCES posts(id)
+  post_id bigint NOT NULL REFERENCES posts(id) ON DELETE CASCADE
  );
