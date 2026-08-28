@@ -11,6 +11,8 @@ import org.isln.blog.model.Post;
 import org.isln.blog.repository.post.PostRepository;
 import org.isln.blog.repository.post.PostRequestParameters;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -47,7 +49,7 @@ public class PostRepositoryTest {
     public void pagingRequestTest() {
         createPosts(6);
 
-        List<Post> posts = postRepository.find(new PostRequestParameters(1, 2, null, null));
+        List<Post> posts = postRepository.find(1, 2, new PostRequestParameters( null, null));
 
         assertThat(posts).hasSize(2);
         assertThat(posts).anyMatch(post -> post.getId().equals(3L));
@@ -101,8 +103,18 @@ public class PostRepositoryTest {
         assertThatThrownBy(() -> postRepository.findById(id)).isInstanceOf(ObjectNotFound.class);
     }
 
-    private void createPosts(int amount) {
-        for (int i = 0; i < amount; i++) {
+    @ParameterizedTest()
+    @ValueSource(longs = {0, 5})
+    public void countTest(long expectedPostCount) {
+        createPosts(expectedPostCount);
+
+        long actualPostCount = postRepository.count(new PostRequestParameters(null, null));
+
+        assertThat(actualPostCount).isEqualTo(expectedPostCount);
+    }
+
+    private void createPosts(long amount) {
+        for (long i = 0; i < amount; i++) {
             String text = "text " + i;
             String title = "title " + i;
             final String tag1 = "tag1";

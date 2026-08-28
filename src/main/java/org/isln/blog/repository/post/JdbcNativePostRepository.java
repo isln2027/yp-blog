@@ -21,6 +21,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class JdbcNativePostRepository implements PostRepository {
+    public static final String POST_COUNT_ALIAS = "post_count";
     private final JdbcTemplate jdbcTemplate;
     private final JsonMapper jsonMapper;
 
@@ -33,12 +34,11 @@ public class JdbcNativePostRepository implements PostRepository {
     private static final List<String> BASE_COLUMNS = List.of(ID, TITLE, TEXT, TAGS, COMMENT_COUNT, LIKE_COUNT);
 
     @Override
-    public List<Post> find(PostRequestParameters parameters) {
+    public List<Post> find(int pageNumber, int pageSize, PostRequestParameters parameters) {
         String query = pagingQuery();
-        int limit = parameters.pageSize();
-        int offset = parameters.pageNumber() * limit;
+        int offset = pageNumber * pageSize;
         // todo implement search
-        return jdbcTemplate.query(query, this::map, limit, offset);
+        return jdbcTemplate.query(query, this::map, pageSize, offset);
     }
 
     @Override
@@ -71,6 +71,14 @@ public class JdbcNativePostRepository implements PostRepository {
     @Override
     public void delete(long id) {
         jdbcTemplate.update("DELETE FROM posts where id = ?", id);
+    }
+
+    @Override
+    public Long count(PostRequestParameters parameters) {
+        return jdbcTemplate.queryForObject(
+                "SELECT count(1) as %s FROM posts".formatted(POST_COUNT_ALIAS),
+                (rs, index) -> rs.getLong(POST_COUNT_ALIAS)
+        );
     }
 
     private Post map(ResultSet resultSet, int rowNumber) throws SQLException {

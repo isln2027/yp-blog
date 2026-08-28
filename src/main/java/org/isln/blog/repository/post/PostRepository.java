@@ -6,8 +6,9 @@ import org.isln.blog.model.Post;
 
 public interface PostRepository {
     Post findById(long id);
-    List<Post> find(PostRequestParameters postRequestParameters);
+    List<Post> find(int pageNumber, int pageSize, PostRequestParameters parameters);
     Long create(Post post);
     void update(Post post);
     void delete(long id);
+    Long count(PostRequestParameters parameters);
 }
