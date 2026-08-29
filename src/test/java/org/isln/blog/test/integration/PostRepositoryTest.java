@@ -1,6 +1,7 @@
 package org.isln.blog.test.integration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import org.isln.blog.model.Post;
 import org.isln.blog.repository.post.PostRepository;
 import org.isln.blog.repository.post.PostRequestParameters;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -26,6 +28,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringJUnitConfig(classes = {DataSourceConfiguration.class, ApplicationConfiguration.class})
 @TestPropertySource(locations = "classpath:test-application.properties")
 public class PostRepositoryTest {
+    public static final String TAG_1 = "#tag1";
+    public static final String TAG_2 = "#tag2";
+    public static final String TAG_3 = "#tag3";
     @Autowired
     private PostRepository postRepository;
 
@@ -138,6 +143,125 @@ public class PostRepositoryTest {
             ids.add(postRepository.create(new Post().setTitle(title).setText(text).setTags(Set.of(tag1, tag2))));
         }
         return ids;
+    }
+
+
+    @Nested
+    class PostSearch {
+        @Test
+        public void findByTitleTest() {
+            Long id1 = createPost("Post", Set.of(TAG_1, TAG_2));
+            Long id2 = createPost("Post unique", Set.of(TAG_2, TAG_3));
+            Long id3 = createPost("Post unique title", Set.of(TAG_3));
+            Long id4 = createPost("", Collections.emptySet());
+
+            {
+                List<Post> result = findByTitle(null);
+                assertThat(result.stream().map(Post::getId).toList()).containsExactlyInAnyOrder(id1, id2, id3, id4);
+            }
+            {
+                List<Post> result = findByTitle("Post");
+                assertThat(result.stream().map(Post::getId).toList()).containsExactlyInAnyOrder(id1, id2, id3);
+            }
+            {
+                List<Post> result = findByTitle("Post uni");
+                assertThat(result.stream().map(Post::getId).toList()).containsExactlyInAnyOrder(id2, id3);
+            }
+            {
+                List<Post> result = findByTitle("No matching post");
+                assertThat(result).hasSize(0);
+            }
+        }
+
+        @Test
+        public void findByTagsTest() {
+            Long id1 = createPost("Post", Set.of(TAG_1, TAG_2));
+            Long id2 = createPost("Post unique", Set.of(TAG_2, TAG_3));
+            Long id3 = createPost("Post unique title", Set.of(TAG_3));
+            Long id4 = createPost("", Collections.emptySet());
+
+            {
+                Set<String> tags = Set.of(TAG_1);
+                List<Post> result = findByTags(tags);
+                assertThat(result.stream().map(Post::getId).toList()).containsExactly(id1);
+            }
+            {
+                Set<String> tags = Set.of(TAG_2);
+                List<Post> result = findByTags(tags);
+                assertThat(result.stream().map(Post::getId).toList()).containsExactlyInAnyOrder(id1, id2);
+            }
+            {
+                Set<String> tags = Set.of(TAG_3);
+                List<Post> result = findByTags(tags);
+                assertThat(result.stream().map(Post::getId).toList()).containsExactlyInAnyOrder(id2, id3);
+            }
+            {
+                Set<String> tags = Set.of(TAG_2, TAG_3);
+                List<Post> result = findByTags(tags);
+                assertThat(result.stream().map(Post::getId).toList()).containsExactly(id2);
+            }
+            {
+                Set<String> tags = Set.of("#nonexistent");
+                List<Post> result = findByTags(tags);
+                assertThat(result).isEmpty();
+            }
+        }
+
+        @Test
+        public void findByTagsAndTitleTest() {
+            Long id1 = createPost("Post", Set.of(TAG_1, TAG_2));
+            Long id2 = createPost("Post unique", Set.of(TAG_2, TAG_3));
+            Long id3 = createPost("Post unique title", Set.of(TAG_3));
+            Long id4 = createPost("Another", Set.of(TAG_2, TAG_3));
+            Long id = createPost("", Collections.emptySet());
+
+            {
+                Set<String> tags = Set.of(TAG_1);
+                String query = "Post";
+                List<Post> result = find(query, tags);
+                assertThat(result.stream().map(Post::getId).toList()).containsExactly(id1);
+            }
+            {
+                Set<String> tags = Set.of(TAG_2);
+                String query = "Post";
+                List<Post> result = find(query, tags);
+                assertThat(result.stream().map(Post::getId).toList()).containsExactlyInAnyOrder(id1, id2);
+            }
+            {
+                Set<String> tags = Set.of(TAG_2, TAG_3);
+                String query = "Another";
+                List<Post> result = find(query, tags);
+                assertThat(result.stream().map(Post::getId).toList()).containsExactly(id4);
+            }
+            {
+                Set<String> tags = Set.of("#nonexistent");
+                String query = "Post";
+                List<Post> result = find(query, tags);
+                assertThat(result).isEmpty();
+            }
+            {
+                Set<String> tags = Set.of(TAG_2);
+                String query = "nonexistent";
+                List<Post> result = find(query, tags);
+                assertThat(result).isEmpty();
+            }
+        }
+
+        private Long createPost(String title, Set<String> tags) {
+            return postRepository.create(new Post().setTitle(title).setTags(tags).setText(""));
+        }
+
+        private List<Post> findByTags(Set<String> tags) {
+            return postRepository.find(0, 100, new PostRequestParameters(null, tags));
+        }
+
+        private List<Post> findByTitle(String query) {
+            return postRepository.find(0, 100, new PostRequestParameters(query, null));
+        }
+
+        private List<Post> find(String query, Set<String> tags) {
+            return postRepository.find(0, 100, new PostRequestParameters(query, tags));
+        }
     }
 
     @BeforeEach
