@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 public interface EntityMapper {
     PostDto map(Post post);
 
+    @Mapping(target = "lastPage", expression = "java(posts.getLastPage() + 1)")
     PagedPostDto map(PagedPosts posts);
 
     @Mapping(target = "id", source = "id")

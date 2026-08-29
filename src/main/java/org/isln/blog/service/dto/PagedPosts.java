@@ -16,4 +16,12 @@ public class PagedPosts {
     private Boolean hasPrevious;
     private Boolean hasNext;
     private Integer lastPage;
+
+    public Boolean hasPrevious() {
+        return hasPrevious;
+    }
+
+    public Boolean hasNext() {
+        return hasNext;
+    }
 }

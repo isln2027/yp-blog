@@ -5,10 +5,10 @@ import java.util.List;
 import org.isln.blog.model.Post;
 
 public interface PostRepository {
-    Post findById(long id);
-    List<Post> find(int pageNumber, int pageSize, PostRequestParameters parameters);
+    Post findById(Long id);
+    List<Post> find(Integer pageNumber, Integer pageSize, PostRequestParameters parameters);
     Long create(Post post);
     void update(Post post);
-    void delete(long id);
+    void delete(Long id);
     Long count(PostRequestParameters parameters);
 }

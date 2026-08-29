@@ -34,15 +34,15 @@ public class JdbcNativePostRepository implements PostRepository {
     private static final List<String> BASE_COLUMNS = List.of(ID, TITLE, TEXT, TAGS, COMMENT_COUNT, LIKE_COUNT);
 
     @Override
-    public List<Post> find(int pageNumber, int pageSize, PostRequestParameters parameters) {
+    public List<Post> find(Integer pageNumber, Integer pageSize, PostRequestParameters parameters) {
         String query = pagingQuery();
-        int offset = pageNumber * pageSize;
+        long offset = (long) pageNumber * pageSize;
         // todo implement search
         return jdbcTemplate.query(query, this::map, pageSize, offset);
     }
 
     @Override
-    public Post findById(long id) {
+    public Post findById(Long id) {
         // todo process non-existent posts?
         return jdbcTemplate.query(queryById(), this::map, id)
                 .stream()
@@ -69,7 +69,7 @@ public class JdbcNativePostRepository implements PostRepository {
     }
 
     @Override
-    public void delete(long id) {
+    public void delete(Long id) {
         jdbcTemplate.update("DELETE FROM posts where id = ?", id);
     }
 
