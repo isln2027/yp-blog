@@ -68,13 +68,11 @@ public class PostServiceTest {
             "2, 3, 9, false"
     })
     public void hasNextTest(int currentPage, int pageSize, long totalPostCount, boolean hasNext) {
-        Mockito.when(postRepository.find(any(), any(), any()))
-                .thenReturn(Collections.nCopies(pageSize, new Post()));
+        Mockito.when(postRepository.find(any(), any(), any())).thenReturn(Collections.nCopies(pageSize, new Post()));
         Mockito.when(postRepository.count(any())).thenReturn(totalPostCount);
 
         PagedPosts posts = postService.find("", currentPage, pageSize);
 
         assertThat(posts.hasNext()).isEqualTo(hasNext);
     }
-
 }
