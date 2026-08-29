@@ -23,13 +23,14 @@ public class PostService {
         long totalPostCount = postRepository.count(parameters);
         boolean hasPrevious = pageNumber > 0;
         int pageCount = countPages(pageSize, totalPostCount);
-        boolean hasNext = pageNumber < pageCount;
+        int lastPage = pageCount - 1;
+        boolean hasNext = pageNumber < lastPage;
 
         return new PagedPosts()
                 .setPosts(posts)
                 .setHasPrevious(hasPrevious)
                 .setHasNext(hasNext)
-                .setLastPage(Math.max(0, pageCount - 1));
+                .setLastPage(Math.max(0, lastPage));
     }
 
     public Post findById(Long id) {
