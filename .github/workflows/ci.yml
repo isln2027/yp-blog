@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master, m3s1, github-ci ]
+    branches: [ '**' ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, m1s3 ]
 
 jobs:
   test:
