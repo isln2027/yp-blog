@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Primary;
 @Configuration
 @ComponentScan("org.isln.blog.service")
 public class TestConfiguration {
-
     @Bean
     @Primary
     public PostRepository mockOrderRepository() {
