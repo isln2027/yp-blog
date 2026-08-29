@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -37,10 +38,17 @@ public class JdbcNativePostRepository implements PostRepository {
 
     @Override
     public List<Post> find(Integer pageNumber, Integer pageSize, PostRequestParameters parameters) {
-        String query = pagingQuery();
         long offset = (long) pageNumber * pageSize;
-        // todo implement search
-        return jdbcTemplate.query(query, this::map, pageSize, offset);
+        QueryParameters queryParameters = queryWithSearch(parameters);
+        String query = queryParameters.query() + """
+                ORDER BY %s
+                LIMIT ? OFFSET ?
+                """.formatted(ID);
+        List<Object> arguments = new ArrayList<>(queryParameters.arguments());
+        arguments.add(pageSize);
+        arguments.add(offset);
+        Object[] argumentArray = arguments.toArray(new Object[0]);
+        return jdbcTemplate.query(query, this::map, argumentArray);
     }
 
     @Override
@@ -89,9 +97,12 @@ public class JdbcNativePostRepository implements PostRepository {
 
     @Override
     public Long count(PostRequestParameters parameters) {
+        String countQuery = "SELECT count(1) as %s FROM posts";
+        QueryParameters queryParameters = addWhereExpressions(parameters, countQuery);
         return jdbcTemplate.queryForObject(
-                "SELECT count(1) as %s FROM posts".formatted(POST_COUNT_ALIAS),
-                (rs, index) -> rs.getLong(POST_COUNT_ALIAS)
+                queryParameters.query().formatted(POST_COUNT_ALIAS),
+                (rs, index) -> rs.getLong(POST_COUNT_ALIAS),
+                queryParameters.arguments().toArray(new Object[0])
         );
     }
 
@@ -122,12 +133,39 @@ public class JdbcNativePostRepository implements PostRepository {
         return ps;
     }
 
-    private static String pagingQuery() {
+    private static QueryParameters queryWithSearch(PostRequestParameters parameters) {
+        String baseQuery = basicSelect();
+        return addWhereExpressions(parameters, baseQuery);
+    }
+
+    private static QueryParameters addWhereExpressions(PostRequestParameters parameters, String baseQuery) {
+        List<String> whereExpressions = new ArrayList<>();
+        List<Object> arguments = new ArrayList<>();
+        if (parameters.hasQuery()) {
+            whereExpressions.add("title LIKE ?");
+            arguments.add("%" + parameters.query() + "%");
+        }
+        if (parameters.hasTags()) {
+            // todo в H2 нет нормальных методов для работы с json колонкой, исправить после перехода
+            parameters.tags().forEach(tag -> {
+                        whereExpressions.add("POSITION(? IN CAST(tags AS VARCHAR)) > 0");
+                        arguments.add(tag);
+                    }
+            );
+        }
+        if (whereExpressions.isEmpty()) {
+            return new QueryParameters(baseQuery, arguments);
+        } else {
+            String query = baseQuery + "WHERE " + String.join(" AND ", whereExpressions) + "\n";
+            return new QueryParameters(query, arguments);
+        }
+    }
+
+    private static String basicSelect() {
         return """
                 SELECT %s
                 FROM posts
-                ORDER BY id
-                LIMIT ? OFFSET ?""".formatted(String.join(", ", BASE_COLUMNS));
+                """.formatted(String.join(", ", BASE_COLUMNS));
     }
 
     private static String queryById() {
@@ -136,5 +174,8 @@ public class JdbcNativePostRepository implements PostRepository {
                 FROM posts
                 WHERE id = ?
                 """.formatted(String.join(", ", BASE_COLUMNS));
+    }
+
+    private record QueryParameters(String query, List<Object> arguments) {
     }
 }
