@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -71,6 +73,18 @@ public class JdbcNativePostRepository implements PostRepository {
     @Override
     public void delete(Long id) {
         jdbcTemplate.update("DELETE FROM posts where id = ?", id);
+    }
+
+    @Override
+    public void delete(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        jdbcTemplate.update(
+                "DELETE FROM posts WHERE id IN (%s)"
+                        .formatted(String.join(", ", Collections.nCopies(ids.size(), "?"))),
+                ids.toArray()
+        );
     }
 
     @Override

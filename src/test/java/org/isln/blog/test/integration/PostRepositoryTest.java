@@ -1,5 +1,6 @@
 package org.isln.blog.test.integration;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import org.isln.blog.exceptions.RepositoryException;
 import org.isln.blog.model.Post;
 import org.isln.blog.repository.post.PostRepository;
 import org.isln.blog.repository.post.PostRequestParameters;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -47,13 +49,13 @@ public class PostRepositoryTest {
 
     @Test
     public void pagingRequestTest() {
-        createPosts(6);
+        List<Long> ids = createPosts(6);
 
-        List<Post> posts = postRepository.find(1, 2, new PostRequestParameters( null, null));
+        List<Post> posts = postRepository.find(1, 2, new PostRequestParameters( ));
 
         assertThat(posts).hasSize(2);
-        assertThat(posts).anyMatch(post -> post.getId().equals(3L));
-        assertThat(posts).anyMatch(post -> post.getId().equals(4L));
+        assertThat(posts).anyMatch(post -> post.getId().equals(ids.get(2)));
+        assertThat(posts).anyMatch(post -> post.getId().equals(ids.get(3)));
     }
 
     @Test
@@ -108,18 +110,42 @@ public class PostRepositoryTest {
     public void countTest(long expectedPostCount) {
         createPosts(expectedPostCount);
 
-        long actualPostCount = postRepository.count(new PostRequestParameters(null, null));
+        long actualPostCount = postRepository.count(new PostRequestParameters());
 
         assertThat(actualPostCount).isEqualTo(expectedPostCount);
     }
 
-    private void createPosts(long amount) {
+    @Test
+    public void batchDeleteTest() {
+        createPosts(3);
+        List<Post> all = postRepository.find(0, 10, new PostRequestParameters());
+        List<Long> toDelete = all.subList(0, 2).stream().map(Post::getId).toList();
+
+        postRepository.delete(toDelete);
+
+        List<Post> postsAfterDelete = postRepository.find(0, 10, new PostRequestParameters());
+        assertThat(postsAfterDelete).hasSize(1);
+        assertThat(postsAfterDelete.getFirst().getId()).isEqualTo(all.get(2).getId());
+    }
+
+    private List<Long> createPosts(long amount) {
+        List<Long> ids = new ArrayList<>();
         for (long i = 0; i < amount; i++) {
             String text = "text " + i;
             String title = "title " + i;
             final String tag1 = "tag1";
             final String tag2 = "tag2";
-            postRepository.create(new Post().setTitle(title).setText(text).setTags(Set.of(tag1, tag2)));
+            ids.add(postRepository.create(new Post().setTitle(title).setText(text).setTags(Set.of(tag1, tag2))));
         }
+        return ids;
+    }
+
+    @BeforeEach
+    public void cleanup() {
+        List<Long> ids = postRepository.find(0, Integer.MAX_VALUE, new PostRequestParameters())
+                .stream()
+                .map(Post::getId)
+                .toList();
+        postRepository.delete(ids);
     }
 }

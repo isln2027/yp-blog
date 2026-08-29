@@ -1,5 +1,6 @@
 package org.isln.blog.repository.post;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.isln.blog.model.Post;
@@ -10,5 +11,6 @@ public interface PostRepository {
     Long create(Post post);
     void update(Post post);
     void delete(Long id);
+    void delete(Collection<Long> ids);
     Long count(PostRequestParameters parameters);
 }
