@@ -111,7 +111,6 @@ public class JdbcNativePostRepository implements PostRepository {
                 .setId(resultSet.getLong("id"))
                 .setTitle(resultSet.getString("title"))
                 .setText(resultSet.getString("text"))
-                .setCommentCount(resultSet.getInt("comment_count"))
                 .setLikeCount(resultSet.getInt("like_count"))
                 .setTags(
                         jsonMapper.readValue(

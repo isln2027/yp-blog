@@ -49,7 +49,6 @@ public class PostRepositoryTest {
             assertThat(createdPost.getTitle()).isEqualTo(title);
             assertThat(createdPost.getText()).isEqualTo(text);
             assertThat(createdPost.getTags()).containsExactly(tag1, tag2);
-            assertThat(createdPost.getCommentCount()).isEqualTo(0);
             assertThat(createdPost.getLikeCount()).isEqualTo(0);
         }
 
@@ -88,7 +87,6 @@ public class PostRepositoryTest {
             assertThat(createdPost.getTitle()).isEqualTo(updatedTitle);
             assertThat(createdPost.getText()).isEqualTo(updatedText);
             assertThat(createdPost.getTags()).containsExactly(updatedTag1, updatedTag2);
-            assertThat(createdPost.getCommentCount()).isEqualTo(0);
             assertThat(createdPost.getLikeCount()).isEqualTo(0);
         }
 
