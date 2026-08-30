@@ -16,4 +16,6 @@ public interface EntityMapper {
 
     @Mapping(target = "id", source = "id")
     Post map(PostDto postDto, Long id);
+
+    Post map(PostDto postDto);
 }

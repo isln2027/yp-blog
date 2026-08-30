@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    public Post create(Post post) {
+        Long id = postRepository.create(post);
+        return findById(id);
+    }
 
     public PagedPosts find(String query, Integer pageNumber, Integer pageSize) {
         // todo implement search

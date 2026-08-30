@@ -8,6 +8,7 @@ import org.isln.blog.service.PostService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
     private final PostService postService;
     private final EntityMapper mapper;
+
+    @PostMapping("/posts")
+    public PostDto create(@RequestBody PostDto post) {
+        return mapper.map(postService.create(mapper.map(post)));
+    }
+
     @GetMapping("/posts")
     public PagedPostDto find(
             @RequestParam Integer pageNumber,
