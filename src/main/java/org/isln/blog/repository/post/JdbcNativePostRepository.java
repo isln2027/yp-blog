@@ -24,26 +24,23 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class JdbcNativePostRepository implements PostRepository {
-    public static final String POST_COUNT_ALIAS = "post_count";
     private final JdbcTemplate jdbcTemplate;
     private final JsonMapper jsonMapper;
 
+    private static final String POSTS_TABLE = "posts";
+    private static final String POST_COUNT_ALIAS = "post_count";
     private static final String ID = "id";
     private static final String TITLE = "title";
     private static final String TEXT = "text";
     private static final String TAGS = "tags";
-    private static final String COMMENT_COUNT = "comment_count";
     private static final String LIKE_COUNT = "like_count";
-    private static final List<String> BASE_COLUMNS = List.of(ID, TITLE, TEXT, TAGS, COMMENT_COUNT, LIKE_COUNT);
+    private static final List<String> ALL_COLUMNS = List.of(ID, TITLE, TEXT, TAGS, LIKE_COUNT);
 
     @Override
     public List<Post> find(Integer pageNumber, Integer pageSize, PostRequestParameters parameters) {
         long offset = (long) pageNumber * pageSize;
         QueryParameters queryParameters = queryWithSearch(parameters);
-        String query = queryParameters.query() + """
-                ORDER BY %s
-                LIMIT ? OFFSET ?
-                """.formatted(ID);
+        String query = queryParameters.query() + " ORDER BY %s LIMIT ? OFFSET ?".formatted(ID);
         List<Object> arguments = new ArrayList<>(queryParameters.arguments());
         arguments.add(pageSize);
         arguments.add(offset);
@@ -54,7 +51,7 @@ public class JdbcNativePostRepository implements PostRepository {
     @Override
     public Post findById(Long id) {
         // todo process non-existent posts?
-        return jdbcTemplate.query(queryById(), this::map, id)
+        return jdbcTemplate.query(queryById(ALL_COLUMNS), this::map, id)
                 .stream()
                 .findAny()
                 .orElseThrow(() -> new ObjectNotFound("Post with id '" + id + " not found"));
@@ -73,14 +70,14 @@ public class JdbcNativePostRepository implements PostRepository {
             throw new RepositoryException("Id is not provided for update operation");
         }
         jdbcTemplate.update(
-                "UPDATE posts SET %s = ?, %s = ?, %s = ? FORMAT JSON WHERE %s = ?".formatted(TITLE, TEXT, TAGS, ID),
+                "UPDATE %s SET %s = ?, %s = ?, %s = ? FORMAT JSON WHERE %s = ?".formatted(POSTS_TABLE, TITLE, TEXT, TAGS, ID),
                 post.getTitle(), post.getText(), jsonMapper.writeValueAsString(post.getTags()), post.getId()
         );
     }
 
     @Override
     public void delete(Long id) {
-        jdbcTemplate.update("DELETE FROM posts where id = ?", id);
+        jdbcTemplate.update("DELETE FROM %s where id = ?".formatted(POSTS_TABLE), id);
     }
 
     @Override
@@ -89,18 +86,18 @@ public class JdbcNativePostRepository implements PostRepository {
             return;
         }
         jdbcTemplate.update(
-                "DELETE FROM posts WHERE id IN (%s)"
-                        .formatted(String.join(", ", Collections.nCopies(ids.size(), "?"))),
+                "DELETE FROM %s WHERE id IN (%s)"
+                        .formatted(POSTS_TABLE, String.join(", ", Collections.nCopies(ids.size(), "?"))),
                 ids.toArray()
         );
     }
 
     @Override
     public Long count(PostRequestParameters parameters) {
-        String countQuery = "SELECT count(1) as %s FROM posts";
+        String countQuery = "SELECT count(1) as %s FROM %s".formatted(POST_COUNT_ALIAS, POSTS_TABLE);
         QueryParameters queryParameters = addWhereExpressions(parameters, countQuery);
         return jdbcTemplate.queryForObject(
-                queryParameters.query().formatted(POST_COUNT_ALIAS),
+                queryParameters.query(),
                 (rs, index) -> rs.getLong(POST_COUNT_ALIAS),
                 queryParameters.arguments().toArray(new Object[0])
         );
@@ -109,11 +106,11 @@ public class JdbcNativePostRepository implements PostRepository {
     @Override
     public Integer incrementLikeCount(Long id) {
         jdbcTemplate.update(
-                "UPDATE posts SET %s = %s + 1 WHERE id = ?".formatted(LIKE_COUNT, LIKE_COUNT),
+                "UPDATE %s SET %s = %s + 1 WHERE id = ?".formatted(POSTS_TABLE, LIKE_COUNT, LIKE_COUNT),
                 id
         );
         return jdbcTemplate.queryForObject(
-                "SELECT %s FROM posts WHERE %s = ?".formatted(LIKE_COUNT, ID),
+                queryById(List.of(LIKE_COUNT)),
                 (rs, row) -> rs.getInt(LIKE_COUNT),
                 id
         );
@@ -176,16 +173,16 @@ public class JdbcNativePostRepository implements PostRepository {
     private static String basicSelect() {
         return """
                 SELECT %s
-                FROM posts
-                """.formatted(String.join(", ", BASE_COLUMNS));
+                FROM %s
+                """.formatted(String.join(", ", JdbcNativePostRepository.ALL_COLUMNS), POSTS_TABLE);
     }
 
-    private static String queryById() {
+    private static String queryById(Collection<String> columns) {
         return """
                 SELECT %s
-                FROM posts
-                WHERE id = ?
-                """.formatted(String.join(", ", BASE_COLUMNS));
+                FROM %s
+                WHERE %s = ?
+                """.formatted(String.join(", ", columns), POSTS_TABLE, ID);
     }
 
     private record QueryParameters(String query, List<Object> arguments) {
