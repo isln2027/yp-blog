@@ -106,6 +106,19 @@ public class JdbcNativePostRepository implements PostRepository {
         );
     }
 
+    @Override
+    public Integer incrementLikeCount(Long id) {
+        jdbcTemplate.update(
+                "UPDATE posts SET %s = %s + 1 WHERE id = ?".formatted(LIKE_COUNT, LIKE_COUNT),
+                id
+        );
+        return jdbcTemplate.queryForObject(
+                "SELECT %s FROM posts WHERE %s = ?".formatted(LIKE_COUNT, ID),
+                (rs, row) -> rs.getInt(LIKE_COUNT),
+                id
+        );
+    }
+
     private Post map(ResultSet resultSet, int rowNumber) throws SQLException {
         return new Post()
                 .setId(resultSet.getLong("id"))
