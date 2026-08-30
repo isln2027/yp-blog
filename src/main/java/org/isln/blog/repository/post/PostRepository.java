@@ -13,4 +13,5 @@ public interface PostRepository {
     void delete(Long id);
     void delete(Collection<Long> ids);
     Long count(PostRequestParameters parameters);
+    Integer incrementLikeCount(Long id);
 }
