@@ -263,6 +263,26 @@ public class PostRepositoryTest {
         }
     }
 
+    @Nested
+    class LikeCount {
+        @Test
+        public void likeCountIncrementTest() {
+            Long id = createEmptyPost();
+            int likeCountBeforeIncrement = postRepository.findById(id).getLikeCount();
+
+            Integer likeCountAfterIncrement = postRepository.incrementLikeCount(id);
+
+            Post post = postRepository.findById(id);
+            int expectedLikeCount = likeCountBeforeIncrement + 1;
+            assertThat(likeCountAfterIncrement).isEqualTo(expectedLikeCount);
+            assertThat(post.getLikeCount()).isEqualTo(expectedLikeCount);
+        }
+
+        private Long createEmptyPost() {
+            return postRepository.create(new Post().setTitle("").setText("").setTags(Collections.emptySet()));
+        }
+    }
+
     @BeforeEach
     public void cleanup() {
         List<Long> ids = postRepository.find(0, Integer.MAX_VALUE, new PostRequestParameters())
