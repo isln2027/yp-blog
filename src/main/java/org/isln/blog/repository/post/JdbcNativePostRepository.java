@@ -116,6 +116,11 @@ public class JdbcNativePostRepository implements PostRepository {
         );
     }
 
+    @Override
+    public Boolean exists(Long id) {
+        return jdbcTemplate.queryForObject("SELECT EXISTS (SELECT 1 FROM posts  WHERE id = ?)", Boolean.class, id);
+    }
+
     private Post map(ResultSet resultSet, int rowNumber) throws SQLException {
         return new Post()
                 .setId(resultSet.getLong("id"))
