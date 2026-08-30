@@ -14,6 +14,5 @@ public class Post {
     private String title;
     private String text;
     private Set<String> tags;
-    private Integer commentCount;
     private Integer likeCount;
 }
