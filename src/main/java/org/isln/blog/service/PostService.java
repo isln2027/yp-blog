@@ -1,6 +1,7 @@
 package org.isln.blog.service;
 
 import java.util.List;
+import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,8 +21,9 @@ public class PostService {
     }
 
     public PagedPosts find(String query, Integer pageNumber, Integer pageSize) {
-        // todo implement search
-        PostRequestParameters parameters = new PostRequestParameters(null, null);
+        String search = PostQueryResolver.getSearchQuery(query);
+        Set<String> tags = PostQueryResolver.getTags(query);
+        PostRequestParameters parameters = new PostRequestParameters(search, tags);
         List<Post> posts = postRepository.find(pageNumber, pageSize, parameters);
 
         long totalPostCount = postRepository.count(parameters);
