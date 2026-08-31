@@ -12,6 +12,7 @@ import org.isln.blog.repository.post.PostRequestParameters;
 import org.isln.blog.service.dto.PagedPosts;
 import org.isln.blog.service.file.FileService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,32 +45,37 @@ public class PostService {
     }
 
     public Post findById(Long id) {
-        throw new RuntimeException("Not implemented");
+        return postRepository.findById(id);
     }
 
     public void update(Post post) {
-        throw new RuntimeException("Not implemented");
+        postRepository.update(post);
     }
-
+    @Transactional
     public void delete(Long id) {
-        throw new RuntimeException("Not implemented");
+        postRepository.delete(id);
+        fileService.delete(getFileName(id));
     }
 
     public byte[] setImage(Long id, String fileName, byte[] file) {
         if (!postRepository.exists(id)) {
             throw new ObjectNotFound("Post '" + id + "' not found");
         }
-        String name = id + "";
+        String name = getFileName(id);
         fileService.save(name, file);
         return fileService.get(name);
     }
 
     public byte[] getImage(Long id) {
-        String name = id + "";
+        String name = getFileName(id);
         return fileService.get(name);
     }
 
     private static int countPages(int pageSize, long totalPostCount) {
         return (int) ((totalPostCount + pageSize - 1) / pageSize);
+    }
+
+    private static String getFileName(Long id) {
+        return id + "";
     }
 }
