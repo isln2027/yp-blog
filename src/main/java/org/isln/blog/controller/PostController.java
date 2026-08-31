@@ -1,10 +1,14 @@
 package org.isln.blog.controller;
 
+import java.io.IOException;
+
 import lombok.RequiredArgsConstructor;
 
 import org.isln.blog.controller.dto.PagedPostDto;
 import org.isln.blog.controller.dto.PostDto;
 import org.isln.blog.service.PostService;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,6 +42,22 @@ public class PostController {
     @GetMapping("/posts/{id}")
     public PostDto find(@PathVariable Long id) {
         return mapper.map(postService.findById(id));
+    }
+
+    @PutMapping("/posts/{id}/image")
+    public ResponseEntity<byte[]> setImage(@RequestBody MultipartFile file, @PathVariable Long id) throws IOException {
+        byte[] image = postService.setImage(id, file.getName(), file.getBytes());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(image);
+    }
+
+    @GetMapping("/posts/{id}/image")
+    public ResponseEntity<byte[]> getImage(@PathVariable Long id) {
+        byte[] image = postService.getImage(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(image);
     }
 
     @PutMapping("/posts/{id}")
