@@ -5,16 +5,20 @@ import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 
+import org.isln.blog.exceptions.ObjectNotFound;
 import org.isln.blog.model.Post;
 import org.isln.blog.repository.post.PostRepository;
 import org.isln.blog.repository.post.PostRequestParameters;
 import org.isln.blog.service.dto.PagedPosts;
+import org.isln.blog.service.file.FileService;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final FileService fileService;
+
     public Post create(Post post) {
         Long id = postRepository.create(post);
         return findById(id);
@@ -49,6 +53,20 @@ public class PostService {
 
     public void delete(Long id) {
         throw new RuntimeException("Not implemented");
+    }
+
+    public byte[] setImage(Long id, String fileName, byte[] file) {
+        if (!postRepository.exists(id)) {
+            throw new ObjectNotFound("Post '" + id + "' not found");
+        }
+        String name = id + "";
+        fileService.save(name, file);
+        return fileService.get(name);
+    }
+
+    public byte[] getImage(Long id) {
+        String name = id + "";
+        return fileService.get(name);
     }
 
     private static int countPages(int pageSize, long totalPostCount) {
