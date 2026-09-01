@@ -1,7 +1,9 @@
 package org.isln.blog.controller;
 
+import org.isln.blog.controller.dto.CommentDto;
 import org.isln.blog.controller.dto.PagedPostDto;
 import org.isln.blog.controller.dto.PostDto;
+import org.isln.blog.model.Comment;
 import org.isln.blog.model.Post;
 import org.isln.blog.service.dto.PagedPosts;
 import org.mapstruct.Mapper;
@@ -18,4 +20,8 @@ public interface EntityMapper {
     Post map(PostDto postDto, Long id);
 
     Post map(PostDto postDto);
+
+    Comment map(CommentDto commentDto);
+
+    CommentDto map(Comment comment);
 }
