@@ -16,20 +16,25 @@ import tools.jackson.databind.json.JsonMapper;
 import org.isln.blog.exceptions.ObjectNotFound;
 import org.isln.blog.exceptions.RepositoryException;
 import org.isln.blog.model.Post;
+import org.isln.blog.repository.comment.JdbcNativeCommentRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import static org.isln.blog.repository.comment.JdbcNativeCommentRepository.COMMENTS_TABLE;
+
 @Repository
 @RequiredArgsConstructor
 public class JdbcNativePostRepository implements PostRepository {
+    public static final String POST_ID_IN_COMMENTS = JdbcNativeCommentRepository.COMMENTS_TABLE + "." + JdbcNativeCommentRepository.POST_ID;
     private final JdbcTemplate jdbcTemplate;
     private final JsonMapper jsonMapper;
 
     private static final String POSTS_TABLE = "posts";
     private static final String POST_COUNT_ALIAS = "post_count";
     private static final String ID = "id";
+    private static final String POST_ID_IN_POSTS = POSTS_TABLE + "." + ID;
     private static final String TITLE = "title";
     private static final String TEXT = "text";
     private static final String TAGS = "tags";
@@ -119,28 +124,26 @@ public class JdbcNativePostRepository implements PostRepository {
 
     @Override
     public Boolean exists(Long id) {
-        return jdbcTemplate.queryForObject("SELECT EXISTS (SELECT 1 FROM posts  WHERE id = ?)", Boolean.class, id);
+        return jdbcTemplate.queryForObject("SELECT EXISTS (SELECT 1 FROM %s WHERE id = ?)".formatted(POSTS_TABLE),
+                Boolean.class,
+                id
+        );
     }
 
     private Post map(ResultSet resultSet, int rowNumber) throws SQLException {
         return new Post()
-                .setId(resultSet.getLong("id"))
-                .setTitle(resultSet.getString("title"))
-                .setText(resultSet.getString("text"))
-                .setLikeCount(resultSet.getInt("like_count"))
+                .setId(resultSet.getLong(ID))
+                .setTitle(resultSet.getString(TITLE))
+                .setText(resultSet.getString(TEXT))
+                .setLikeCount(resultSet.getInt(LIKE_COUNT))
                 .setCommentCount(resultSet.getInt(COMMENT_COUNT_ALIAS))
-                .setTags(
-                        jsonMapper.readValue(
-                                resultSet.getString("tags"),
-                                new TypeReference<>() {
-                                })
-                );
+                .setTags(jsonMapper.readValue(resultSet.getString(TAGS), new TypeReference<>() {}));
     }
 
     private PreparedStatement prepareCreationStatement(Post post, Connection connection) throws SQLException {
         PreparedStatement ps = connection.prepareStatement(
-                "INSERT INTO posts(%s) values(?, ?, ? FORMAT JSON)"
-                        .formatted(String.join(", ", List.of(TITLE, TEXT, TAGS))),
+                "INSERT INTO %s(%s) values(?, ?, ? FORMAT JSON)"
+                        .formatted(POSTS_TABLE, String.join(", ", List.of(TITLE, TEXT, TAGS))),
                 new String[]{ID}
         );
         ps.setString(1, post.getTitle());
@@ -158,7 +161,7 @@ public class JdbcNativePostRepository implements PostRepository {
         List<String> whereExpressions = new ArrayList<>();
         List<Object> arguments = new ArrayList<>();
         if (parameters.hasQuery()) {
-            whereExpressions.add("title LIKE ?");
+            whereExpressions.add("%s LIKE ?".formatted(TITLE));
             arguments.add("%" + parameters.query() + "%");
         }
         if (parameters.hasTags()) {
@@ -178,9 +181,12 @@ public class JdbcNativePostRepository implements PostRepository {
     }
 
     private static String basicSelect(Collection<String> columns) {
-        return "SELECT %s, (SELECT COUNT(1) FROM comments WHERE comments.post_id = posts.id) as %s FROM %s"
+        return "SELECT %s, (SELECT COUNT(1) FROM %s WHERE %s = %s) as %s FROM %s"
                 .formatted(
                         String.join(", ", columns),
+                        COMMENTS_TABLE,
+                        POST_ID_IN_COMMENTS,
+                        POST_ID_IN_POSTS,
                         COMMENT_COUNT_ALIAS,
                         POSTS_TABLE
                 );

@@ -21,13 +21,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class JdbcNativeCommentRepository implements CommentRepository {
-    private final JdbcTemplate jdbcTemplate;
+    public static final String COMMENTS_TABLE = "comments";
+    public static final String ID = "id";
+    public static final String TEXT = "text";
+    public static final String POST_ID = "post_id";
+    public static final List<String> ALL_COLUMNS = List.of(ID, TEXT, POST_ID);
 
-    private static final String COMMENTS_TABLE = "comments";
-    private static final String ID = "id";
-    private static final String TEXT = "text";
-    private static final String POST_ID = "post_id";
-    private static final List<String> ALL_COLUMNS = List.of(ID, TEXT, POST_ID);
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public Long create(Comment comment) {
@@ -76,7 +76,7 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 
     @Override
     public void delete(Long id) {
-        jdbcTemplate.update("DELETE FROM %s where id = ?".formatted(COMMENTS_TABLE), id);
+        jdbcTemplate.update("DELETE FROM %s where %s = ?".formatted(COMMENTS_TABLE, ID), id);
     }
 
     @Override
@@ -85,8 +85,8 @@ public class JdbcNativeCommentRepository implements CommentRepository {
             return;
         }
         jdbcTemplate.update(
-                "DELETE FROM %s WHERE id IN (%s)"
-                        .formatted(COMMENTS_TABLE, String.join(", ", Collections.nCopies(ids.size(), "?"))),
+                "DELETE FROM %s WHERE %s IN (%s)"
+                        .formatted(COMMENTS_TABLE, ID, String.join(", ", Collections.nCopies(ids.size(), "?"))),
                 ids.toArray()
         );
     }
