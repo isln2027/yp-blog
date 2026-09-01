@@ -1,11 +1,14 @@
 package org.isln.blog.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 
+import org.isln.blog.controller.dto.CommentDto;
 import org.isln.blog.controller.dto.PagedPostDto;
 import org.isln.blog.controller.dto.PostDto;
+import org.isln.blog.service.CommentService;
 import org.isln.blog.service.PostService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
+    private final CommentService commentService;
     private final EntityMapper mapper;
 
     @PostMapping("/posts")
@@ -69,5 +73,26 @@ public class PostController {
     @DeleteMapping("/posts/{id}")
     public void delete(@PathVariable Long id) {
         postService.delete(id);
+    }
+
+    @PostMapping("/posts/{id}/comments")
+    public CommentDto addComment(@PathVariable Long id, @RequestBody CommentDto comment) {
+        Long commentId = commentService.create(mapper.map(comment.setPostId(id)));
+        return mapper.map(commentService.findById(commentId));
+    }
+
+    @GetMapping("/posts/{id}/comments")
+    public List<CommentDto> findComments(@PathVariable Long id) {
+        return commentService.findByPostId(id).stream().map(mapper::map).toList();
+    }
+
+    @GetMapping("/posts/{id}/comments/{commentId}")
+    public CommentDto findComment(@PathVariable Long commentId) {
+        return mapper.map(commentService.findById(commentId));
+    }
+
+    @DeleteMapping("/posts/{id}/comments/{commentId}")
+    public void deleteComment(@PathVariable Long commentId) {
+        commentService.delete(commentId);
     }
 }
