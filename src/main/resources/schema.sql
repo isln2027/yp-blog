@@ -3,8 +3,7 @@ CREATE TABLE if NOT EXISTS posts(
   title text NOT NULL,
   text text NOT NULL,
   like_count int NOT NULL DEFAULT 0,
-  tags JSON not null,
-  comment_count int NOT NULL DEFAULT 0
+  tags JSON not null
  );
 
 CREATE TABLE if NOT EXISTS comments(
