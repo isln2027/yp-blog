@@ -9,7 +9,9 @@ import org.isln.blog.configuration.ApplicationConfiguration;
 import org.isln.blog.configuration.DataSourceConfiguration;
 import org.isln.blog.exceptions.ObjectNotFound;
 import org.isln.blog.exceptions.RepositoryException;
+import org.isln.blog.model.Comment;
 import org.isln.blog.model.Post;
+import org.isln.blog.repository.comment.CommentRepository;
 import org.isln.blog.repository.post.PostRepository;
 import org.isln.blog.repository.post.PostRequestParameters;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +32,11 @@ public class PostRepositoryTest {
     public static final String TAG_1 = "#tag1";
     public static final String TAG_2 = "#tag2";
     public static final String TAG_3 = "#tag3";
+
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Nested
     class BasicOperations {
@@ -103,10 +108,30 @@ public class PostRepositoryTest {
             final String tag2 = "tag2";
             Post postToCreate = new Post().setTitle(title).setText(text).setTags(Set.of(tag1, tag2));
             Long id = postRepository.create(postToCreate);
+            Comment comment = new Comment().setPostId(id).setText("");
+            commentRepository.create(comment);
+            commentRepository.create(comment);
 
             postRepository.delete(id);
 
             assertThatThrownBy(() -> postRepository.findById(id)).isInstanceOf(ObjectNotFound.class);
+            assertThat(commentRepository.findByPostId(id)).isEmpty();
+        }
+
+        @ParameterizedTest()
+        @ValueSource(ints = {0, 1, 2})
+        public void commentCountTest(int commentCount) {
+            Long unrelatedPost = emptyPost();
+            commentRepository.create(new Comment().setText("").setPostId(unrelatedPost));
+            Long id = emptyPost();
+            Comment comment = new Comment().setPostId(id).setText("");
+            for (int i = 0; i < commentCount; i++) {
+                commentRepository.create(comment);
+            }
+
+            Post post = postRepository.findById(id);
+
+            assertThat(post.getCommentCount()).isEqualTo(commentCount);
         }
 
         @ParameterizedTest()
@@ -143,10 +168,14 @@ public class PostRepositoryTest {
             }
             return ids;
         }
-    }
 
+        private Long emptyPost() {
+            return postRepository.create(new Post().setTitle("").setText("").setTags(Collections.emptySet()));
+        }
+    }
     @Nested
     class PostSearch {
+
         @Test
         public void findByTitleTest() {
             Long id1 = createPost("Post", Set.of(TAG_1, TAG_2));
