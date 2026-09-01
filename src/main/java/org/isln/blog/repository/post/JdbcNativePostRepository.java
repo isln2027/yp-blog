@@ -34,6 +34,7 @@ public class JdbcNativePostRepository implements PostRepository {
     private static final String TEXT = "text";
     private static final String TAGS = "tags";
     private static final String LIKE_COUNT = "like_count";
+    private static final String COMMENT_COUNT_ALIAS = "comment_count";
     private static final List<String> ALL_COLUMNS = List.of(ID, TITLE, TEXT, TAGS, LIKE_COUNT);
 
     @Override
@@ -127,6 +128,7 @@ public class JdbcNativePostRepository implements PostRepository {
                 .setTitle(resultSet.getString("title"))
                 .setText(resultSet.getString("text"))
                 .setLikeCount(resultSet.getInt("like_count"))
+                .setCommentCount(resultSet.getInt(COMMENT_COUNT_ALIAS))
                 .setTags(
                         jsonMapper.readValue(
                                 resultSet.getString("tags"),
@@ -148,7 +150,7 @@ public class JdbcNativePostRepository implements PostRepository {
     }
 
     private static QueryParameters queryWithSearch(PostRequestParameters parameters) {
-        String baseQuery = basicSelect();
+        String baseQuery = basicSelect(ALL_COLUMNS);
         return addWhereExpressions(parameters, baseQuery);
     }
 
@@ -170,24 +172,22 @@ public class JdbcNativePostRepository implements PostRepository {
         if (whereExpressions.isEmpty()) {
             return new QueryParameters(baseQuery, arguments);
         } else {
-            String query = baseQuery + "WHERE " + String.join(" AND ", whereExpressions) + "\n";
+            String query = baseQuery + " WHERE " + String.join(" AND ", whereExpressions) + "\n";
             return new QueryParameters(query, arguments);
         }
     }
 
-    private static String basicSelect() {
-        return """
-                SELECT %s
-                FROM %s
-                """.formatted(String.join(", ", JdbcNativePostRepository.ALL_COLUMNS), POSTS_TABLE);
+    private static String basicSelect(Collection<String> columns) {
+        return "SELECT %s, (SELECT COUNT(1) FROM comments WHERE comments.post_id = posts.id) as %s FROM %s"
+                .formatted(
+                        String.join(", ", columns),
+                        COMMENT_COUNT_ALIAS,
+                        POSTS_TABLE
+                );
     }
 
     private static String queryById(Collection<String> columns) {
-        return """
-                SELECT %s
-                FROM %s
-                WHERE %s = ?
-                """.formatted(String.join(", ", columns), POSTS_TABLE, ID);
+        return basicSelect(columns) + " WHERE %s = ?".formatted(ID);
     }
 
     private record QueryParameters(String query, List<Object> arguments) {
