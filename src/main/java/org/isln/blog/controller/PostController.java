@@ -39,10 +39,10 @@ public class PostController {
     @GetMapping("/posts")
     public PagedPostDto find(
             @RequestParam Integer pageNumber,
-            @RequestParam Integer pagSize,
+            @RequestParam Integer pageSize,
             @RequestParam(required = false) String search
     ) {
-        return mapper.map(postService.find(search, pageNumber, pagSize));
+        return mapper.map(postService.find(search, pageNumber - 1, pageSize));
     }
 
     @GetMapping("/posts/{id}")
