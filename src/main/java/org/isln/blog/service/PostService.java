@@ -48,6 +48,10 @@ public class PostService {
         return postRepository.findById(id);
     }
 
+    public Integer like(Long id) {
+        return postRepository.incrementLikeCount(id);
+    }
+
     public void update(Post post) {
         postRepository.update(post);
     }

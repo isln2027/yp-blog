@@ -75,6 +75,11 @@ public class PostController {
         postService.delete(id);
     }
 
+    @PostMapping("/posts/{id}/likes")
+    public Integer like(@PathVariable Long id) {
+        return postService.like(id);
+    }
+
     @PostMapping("/posts/{id}/comments")
     public CommentDto addComment(@PathVariable Long id, @RequestBody CommentDto comment) {
         Long commentId = commentService.create(mapper.map(comment.setPostId(id)));
