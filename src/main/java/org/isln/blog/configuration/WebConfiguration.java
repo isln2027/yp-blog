@@ -7,6 +7,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "org.isln.blog")
+@ComponentScan(basePackages = "org.isln.blog.controller")
 @PropertySource("classpath:application.properties")
 public class WebConfiguration {}
