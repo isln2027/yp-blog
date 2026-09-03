@@ -2,7 +2,7 @@
 Приложение рассчитано на работу с контейнером apache tomcat 10.1.59.
 ## Сборка и запуск вручную
 1. Собрать и упаковать приложение командой `./mvnw clean package`
-2. Переместить архив `target/yp-blog.war` в `webapps/` в директории с tomcat
+2. Переместить архив `target/yp-blog.war` в `webapps/ROOT.war` в директории с tomcat
 3. Запустить tomcat скриптом `/bin/startup.sh` из директории с tomcat
 
 ## Скрипт сборки и запуска (для unix-like)
