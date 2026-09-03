@@ -16,6 +16,7 @@ import org.isln.blog.model.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -57,6 +58,8 @@ public class PostControllerTest {
     private JsonMapper mapper;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Value("${app.max-text-length-in-paging-post-response}")
+    private int maxTextLengthInPagedPostResponse;
 
     private MockMvc mockMvc;
 
@@ -77,6 +80,18 @@ public class PostControllerTest {
 
         assertPostIsCreated(title, text, hashtag1, hashtag2, idHolder);
         assertPostFoundById(idHolder.get(), title, text);
+    }
+
+    @Test
+    public void longTextPostTest() throws Exception {
+        String title = "Title";
+        String textBeginning = "Text contains enough characters to be truncated in pages response ";
+        String text = textBeginning + "F".repeat(maxTextLengthInPagedPostResponse);
+        String hashtag1 = "#TAG_1";
+        String hashtag2 = "#TAG_2";
+        createPostWithLongText(title, text, hashtag1, hashtag2);
+
+        assertTextIsTruncated(text.substring(0, maxTextLengthInPagedPostResponse) + "...");
     }
 
     @Test
@@ -362,6 +377,35 @@ public class PostControllerTest {
         mockMvc.perform(multipart(HttpMethod.PUT, "/api/posts/" + id + "/image").file(imageFile))
                 .andExpect(status().isOk())
                 .andExpect(content().bytes(png));
+    }
+
+    private void createPostWithLongText(String title, String text, String hashtag1, String hashtag2) throws Exception {
+        mockMvc.perform(
+                        post("/api/posts")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        mapper.writeValueAsString(
+                                                new Post().setTitle(title).setText(text).setTags(Set.of(hashtag1, hashtag2)))
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value(title))
+                .andExpect(jsonPath("$.text").value(text))
+                .andExpect(jsonPath("$.tags").isArray())
+                .andExpect(jsonPath("$.tags").isArray())
+                .andExpect(jsonPath("$.commentCount").value(0))
+                .andExpect(jsonPath("$.likeCount").value(0))
+                .andReturn();
+    }
+
+    private void assertTextIsTruncated(String expectedText) throws Exception {
+        mockMvc.perform(
+                        get("/api/posts")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .queryParam("pageNumber", "1")
+                                .queryParam("pageSize", "2")
+                )
+                .andExpect(jsonPath("$.posts[0].text").value(expectedText));
     }
 }
 
