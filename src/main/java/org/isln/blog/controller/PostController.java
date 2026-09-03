@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.isln.blog.controller.dto.CommentDto;
 import org.isln.blog.controller.dto.PagedPostDto;
 import org.isln.blog.controller.dto.PostDto;
+import org.isln.blog.controller.mapper.EntityMapper;
 import org.isln.blog.service.CommentService;
 import org.isln.blog.service.PostService;
 import org.springframework.http.MediaType;
