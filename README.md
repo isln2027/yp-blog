@@ -4,13 +4,28 @@
 # Запуск
 Приложение рассчитано на работу с контейнером apache tomcat 10.1.59.
 ## Сборка и запуск вручную
-1. Собрать и упаковать приложение командой `./mvnw clean package`
-2. Переместить архив `target/yp-blog.war` в `webapps/ROOT.war` в директории с tomcat
-3. Запустить tomcat скриптом `/bin/startup.sh` из директории с tomcat
+1. Скачать Apache Tomcat 10.1.59
+2. В директории с tomcat в файле `/conf/server.xml` в `<Host>` добавить
+     ```xml
+       <Context path="" docBase="yp-blog">
+           <WatchedResource>WEB-INF/web.xml</WatchedResource>
+       </Context>
+   ```
+   Дефолтное поведение сервера - размещать приложения по пути `/app-name`. 
+   Эта настройка позволит обращаться к апи по `/`, минуя `app-name`. 
+3. Собрать и упаковать приложение командой `./mvnw clean package`
+4. Переместить архив `target/yp-blog.war` в `webapps` в директории с tomcat
+5. Запустить tomcat скриптом `/bin/startup.sh` из директории с tomcat
 
 ## Скрипт сборки и запуска (для unix-like операционных систем)
-Для запуска можно запустить скрипт `deploy_local.sh` с путем к директории tomcat в качестве параметра:
+Скрипт `deploy_local.sh` собирает и упаковывает проект и запускает (или перезапускат) tomcat сервер с обновленным артефактом.
+Принимает абсолютный или относительный путь к директории с tomcat в качестве параметра:
+```
+./deploy_local.sh /path/to/tomcat/apache-tomcat-10.1.59
+```
+или
 ```
 ./deploy_local.sh ../apache-tomcat-10.1.59
 ```
-По умолчанию используется путь `../apache-tomcat`.
+По умолчанию используется путь `../apache-tomcat` - работает если запускать скрипт из
+`/path/to/project/yp-blog` расположить tomcat уровнем выше. 
