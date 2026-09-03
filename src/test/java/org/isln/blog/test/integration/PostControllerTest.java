@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -53,12 +55,16 @@ public class PostControllerTest {
     private WebApplicationContext webContext;
     @Autowired
     private JsonMapper mapper;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private MockMvc mockMvc;
 
     @BeforeEach
-    public void prepareMockMvc() {
+    public void prepare() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webContext).build();
+        jdbcTemplate.update("DELETE FROM posts");
+        jdbcTemplate.update("DELETE FROM comments");
     }
 
     @Test
@@ -113,17 +119,10 @@ public class PostControllerTest {
     public void addPictureTest() throws Exception {
         long id = createPost("", "");
         byte[] png = new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00};
-        MockMultipartFile imageFile = new MockMultipartFile(
-                "file",
-                "image.png",
-                MediaType.APPLICATION_OCTET_STREAM_VALUE,
-                png);
-        mockMvc.perform(multipart(HttpMethod.PUT, "/api/posts/" + id + "/image").file(imageFile))
-                .andExpect(status().isOk())
-                .andExpect(content().bytes(png));
-        mockMvc.perform(get("/api/posts/" + id + "/image"))
-                .andExpect(status().isOk())
-                .andExpect(content().bytes(png));
+
+        assertPictureUploaded(id, png);
+        assertImageReceived(id, png);
+        assertImageDeletedOnPostDeletion(id);
     }
 
     private void assertCommentAmountIncremented(long id) throws Exception {
@@ -338,6 +337,31 @@ public class PostControllerTest {
                 .andExpect(jsonPath("$.hasPrev").value("false"))
                 .andExpect(jsonPath("$.hasNext").value("false"))
                 .andExpect(jsonPath("$.lastPage").value("1"));
+    }
+
+    private void assertImageDeletedOnPostDeletion(long id) throws Exception {
+        mockMvc.perform(delete("/api/posts/" + id))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/posts/" + id + "/image"))
+                .andExpect(status().isOk())
+                .andExpect(content().bytes(new byte[]{}));
+    }
+
+    private void assertImageReceived(long id, byte[] png) throws Exception {
+        mockMvc.perform(get("/api/posts/" + id + "/image"))
+                .andExpect(status().isOk())
+                .andExpect(content().bytes(png));
+    }
+
+    private void assertPictureUploaded(long id, byte[] png) throws Exception {
+        MockMultipartFile imageFile = new MockMultipartFile(
+                "file",
+                "image.png",
+                MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                png);
+        mockMvc.perform(multipart(HttpMethod.PUT, "/api/posts/" + id + "/image").file(imageFile))
+                .andExpect(status().isOk())
+                .andExpect(content().bytes(png));
     }
 }
 
