@@ -20,7 +20,7 @@ public interface PostRepository {
 
     Long count(PostRequestParameters parameters);
 
-    Integer incrementLikeCount(Long id);
+    Integer incrementLikesCount(Long id);
 
     Boolean exists(Long id);
 }
