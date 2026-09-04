@@ -110,7 +110,7 @@ public class JdbcNativePostRepository implements PostRepository {
     }
 
     @Override
-    public Integer incrementLikeCount(Long id) {
+    public Integer incrementLikesCount(Long id) {
         jdbcTemplate.update(
                 "UPDATE %s SET %s = %s + 1 WHERE id = ?".formatted(POSTS_TABLE, LIKE_COUNT, LIKE_COUNT),
                 id
@@ -135,8 +135,8 @@ public class JdbcNativePostRepository implements PostRepository {
                 .setId(resultSet.getLong(ID))
                 .setTitle(resultSet.getString(TITLE))
                 .setText(resultSet.getString(TEXT))
-                .setLikeCount(resultSet.getInt(LIKE_COUNT))
-                .setCommentCount(resultSet.getInt(COMMENT_COUNT_ALIAS))
+                .setLikesCount(resultSet.getInt(LIKE_COUNT))
+                .setCommentsCount(resultSet.getInt(COMMENT_COUNT_ALIAS))
                 .setTags(jsonMapper.readValue(resultSet.getString(TAGS), new TypeReference<>() {}));
     }
 

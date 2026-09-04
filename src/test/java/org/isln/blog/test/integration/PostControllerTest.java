@@ -109,7 +109,7 @@ public class PostControllerTest {
     }
 
     @Test
-    public void likeCountTest() throws Exception {
+    public void likesCountTest() throws Exception {
         String title = "Title";
         String text = "Text";
         String hashtag1 = "#TAG_1";
@@ -150,13 +150,13 @@ public class PostControllerTest {
                 .andExpect(jsonPath("$.id").exists());
         mockMvc.perform(get("/api/posts/" + id).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.commentCount").value(2));
+                .andExpect(jsonPath("$.commentsCount").value(2));
     }
 
     private void assertCommentFoundById(long id, long commentId, String commentText) throws Exception {
         mockMvc.perform(get("/api/posts/" + id + "/comments/" + commentId).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.id").value(commentId))
                 .andExpect(jsonPath("$.text").value(commentText));
     }
 
@@ -173,7 +173,7 @@ public class PostControllerTest {
         long commentId = commentIdHolder.get();
         mockMvc.perform(get("/api/posts/" + id).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.commentCount").value(1));
+                .andExpect(jsonPath("$.commentsCount").value(1));
         return commentId;
     }
 
@@ -195,8 +195,8 @@ public class PostControllerTest {
                 .andExpect(jsonPath("$.text").value(text))
                 .andExpect(jsonPath("$.tags").isArray())
                 .andExpect(jsonPath("$.tags").isArray())
-                .andExpect(jsonPath("$.commentCount").value(0))
-                .andExpect(jsonPath("$.likeCount").value(0))
+                .andExpect(jsonPath("$.commentsCount").value(0))
+                .andExpect(jsonPath("$.likesCount").value(0))
                 .andDo(r -> id.set(mapper.readValue(r.getResponse().getContentAsString(), Post.class).getId()))
                 .andReturn();
     }
@@ -208,8 +208,8 @@ public class PostControllerTest {
                 .andExpect(jsonPath("$.text").value(text))
                 .andExpect(jsonPath("$.tags").isArray())
                 .andExpect(jsonPath("$.tags").isArray())
-                .andExpect(jsonPath("$.commentCount").value(0))
-                .andExpect(jsonPath("$.likeCount").value(0));
+                .andExpect(jsonPath("$.commentsCount").value(0))
+                .andExpect(jsonPath("$.likesCount").value(0));
     }
 
     private void assertLikesCountedCorrectly(Long id) throws Exception {
@@ -221,7 +221,7 @@ public class PostControllerTest {
                 .andExpect(content().string("2"));
         mockMvc.perform(get("/api/posts/" + id).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.likeCount").value(2));
+                .andExpect(jsonPath("$.likesCount").value(2));
     }
 
     private long createPost(String title, String text, String... tags) throws Exception {
@@ -240,8 +240,8 @@ public class PostControllerTest {
                 .andExpect(jsonPath("$.text").value(text))
                 .andExpect(jsonPath("$.tags").isArray())
                 .andExpect(jsonPath("$.tags").isArray())
-                .andExpect(jsonPath("$.commentCount").value(0))
-                .andExpect(jsonPath("$.likeCount").value(0))
+                .andExpect(jsonPath("$.commentsCount").value(0))
+                .andExpect(jsonPath("$.likesCount").value(0))
                 .andDo(r -> id.set(mapper.readValue(r.getResponse().getContentAsString(), Post.class).getId()))
                 .andReturn();
         return id.get();
@@ -393,8 +393,8 @@ public class PostControllerTest {
                 .andExpect(jsonPath("$.text").value(text))
                 .andExpect(jsonPath("$.tags").isArray())
                 .andExpect(jsonPath("$.tags").isArray())
-                .andExpect(jsonPath("$.commentCount").value(0))
-                .andExpect(jsonPath("$.likeCount").value(0))
+                .andExpect(jsonPath("$.commentsCount").value(0))
+                .andExpect(jsonPath("$.likesCount").value(0))
                 .andReturn();
     }
 

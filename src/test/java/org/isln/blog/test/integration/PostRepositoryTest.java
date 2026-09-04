@@ -54,7 +54,7 @@ public class PostRepositoryTest {
             assertThat(createdPost.getTitle()).isEqualTo(title);
             assertThat(createdPost.getText()).isEqualTo(text);
             assertThat(createdPost.getTags()).containsExactly(tag1, tag2);
-            assertThat(createdPost.getLikeCount()).isEqualTo(0);
+            assertThat(createdPost.getLikesCount()).isEqualTo(0);
         }
 
         @Test
@@ -92,7 +92,7 @@ public class PostRepositoryTest {
             assertThat(createdPost.getTitle()).isEqualTo(updatedTitle);
             assertThat(createdPost.getText()).isEqualTo(updatedText);
             assertThat(createdPost.getTags()).containsExactly(updatedTag1, updatedTag2);
-            assertThat(createdPost.getLikeCount()).isEqualTo(0);
+            assertThat(createdPost.getLikesCount()).isEqualTo(0);
         }
 
         @Test
@@ -120,18 +120,18 @@ public class PostRepositoryTest {
 
         @ParameterizedTest()
         @ValueSource(ints = {0, 1, 2})
-        public void commentCountTest(int commentCount) {
+        public void commentsCountTest(int commentsCount) {
             Long unrelatedPost = emptyPost();
             commentRepository.create(new Comment().setText("").setPostId(unrelatedPost));
             Long id = emptyPost();
             Comment comment = new Comment().setPostId(id).setText("");
-            for (int i = 0; i < commentCount; i++) {
+            for (int i = 0; i < commentsCount; i++) {
                 commentRepository.create(comment);
             }
 
             Post post = postRepository.findById(id);
 
-            assertThat(post.getCommentCount()).isEqualTo(commentCount);
+            assertThat(post.getCommentsCount()).isEqualTo(commentsCount);
         }
 
         @ParameterizedTest()
@@ -293,18 +293,18 @@ public class PostRepositoryTest {
     }
 
     @Nested
-    class LikeCount {
+    class LikesCount {
         @Test
-        public void likeCountIncrementTest() {
+        public void likesCountIncrementTest() {
             Long id = createEmptyPost();
-            int likeCountBeforeIncrement = postRepository.findById(id).getLikeCount();
+            int likesCountBeforeIncrement = postRepository.findById(id).getLikesCount();
 
-            Integer likeCountAfterIncrement = postRepository.incrementLikeCount(id);
+            Integer likesCountAfterIncrement = postRepository.incrementLikesCount(id);
 
             Post post = postRepository.findById(id);
-            int expectedLikeCount = likeCountBeforeIncrement + 1;
-            assertThat(likeCountAfterIncrement).isEqualTo(expectedLikeCount);
-            assertThat(post.getLikeCount()).isEqualTo(expectedLikeCount);
+            int expectedLikesCount = likesCountBeforeIncrement + 1;
+            assertThat(likesCountAfterIncrement).isEqualTo(expectedLikesCount);
+            assertThat(post.getLikesCount()).isEqualTo(expectedLikesCount);
         }
 
         private Long createEmptyPost() {

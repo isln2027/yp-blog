@@ -49,7 +49,7 @@ public class PostService {
     }
 
     public Integer like(Long id) {
-        return postRepository.incrementLikeCount(id);
+        return postRepository.incrementLikesCount(id);
     }
 
     public void update(Post post) {
