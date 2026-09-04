@@ -27,6 +27,7 @@ public class PostQueryResolver {
         return Arrays.stream(request.split(CHUNK_DELIMITER))
                 .filter(chunk -> !chunk.isBlank())
                 .filter(chunk -> chunk.startsWith(TAG_PREFIX))
+                .map(chunk -> chunk.substring(1))
                 .collect(Collectors.toSet());
     }
 }
