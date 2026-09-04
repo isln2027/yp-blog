@@ -47,9 +47,9 @@ public class PostSearchResolverTest {
 
     public static Stream<Arguments> provideTags() {
         return Stream.of(
-                Arguments.of("#tag", Set.of("#tag")),
-                Arguments.of("#tag1 #tag2 ", Set.of("#tag1", "#tag2")),
-                Arguments.of("#tag1     foo    #tag2    ", Set.of("#tag1", "#tag2")),
+                Arguments.of("#tag", Set.of("tag")),
+                Arguments.of("#tag1 #tag2 ", Set.of("tag1", "tag2")),
+                Arguments.of("#tag1     foo    #tag2    ", Set.of("tag1", "tag2")),
                 Arguments.of("foo bar", Collections.emptySet()),
                 Arguments.of(null, Collections.emptySet())
         );
