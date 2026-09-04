@@ -52,11 +52,11 @@ public class PostController {
     }
 
     @PutMapping("/posts/{id}/image")
-    public ResponseEntity<byte[]> setImage(@RequestBody MultipartFile file, @PathVariable Long id) throws IOException {
-        byte[] image = postService.setImage(id, file.getName(), file.getBytes());
+    public ResponseEntity<byte[]> setImage(@RequestBody MultipartFile image, @PathVariable Long id) throws IOException {
+        byte[] file = postService.setImage(id, image.getName(), image.getBytes());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(image);
+                .body(file);
     }
 
     @GetMapping("/posts/{id}/image")

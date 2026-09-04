@@ -370,7 +370,7 @@ public class PostControllerTest {
 
     private void assertPictureUploaded(long id, byte[] png) throws Exception {
         MockMultipartFile imageFile = new MockMultipartFile(
-                "file",
+                "image",
                 "image.png",
                 MediaType.APPLICATION_OCTET_STREAM_VALUE,
                 png);
