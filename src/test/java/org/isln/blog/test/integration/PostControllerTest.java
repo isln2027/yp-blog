@@ -83,6 +83,11 @@ public class PostControllerTest {
     }
 
     @Test
+    public void postNotFoundTest() throws Exception {
+        mockMvc.perform(get("/api/posts/1").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
+    }
+
+    @Test
     public void longTextPostTest() throws Exception {
         String title = "Title";
         String textBeginning = "Text contains enough characters to be truncated in pages response ";
