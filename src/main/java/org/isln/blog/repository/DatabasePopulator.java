@@ -10,15 +10,17 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DataBasePopulator {
+public class DatabasePopulator {
     private final Resource schema;
-    public DataBasePopulator(@Value("classpath:schema.sql") Resource schema) {
+    private final DataSource dataSource;
+
+    public DatabasePopulator(DataSource dataSource, @Value("classpath:schema.sql") Resource schema) {
         this.schema = schema;
+        this.dataSource = dataSource;
     }
 
     @EventListener
     public void populate(ContextRefreshedEvent event) {
-        DataSource dataSource = event.getApplicationContext().getBean(DataSource.class);
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(schema);
         populator.execute(dataSource);
