@@ -4,7 +4,6 @@ import org.isln.blog.controller.dto.PostDto;
 import org.isln.blog.controller.mapper.EntityMapper;
 import org.isln.blog.model.Post;
 import org.isln.blog.test.unit.configuration.MapperTestConfiguration;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -18,17 +17,12 @@ public class MapperTest {
     @Autowired
     private EntityMapper mapper;
 
-    @BeforeEach
-    public void prepareMapper() {
-        mapper.setMaxTextLengthInPagingPostResponse(MAX_TEXT_LENGTH);
-    }
-
     @Test
     public void shortTextIsNotTruncatedText() {
         String shortText = "txt";
         Post post = new Post().setText(shortText);
 
-        PostDto dto = mapper.mapPostShort(post);
+        PostDto dto = mapper.mapPostShort(post, MAX_TEXT_LENGTH);
 
         String text = dto.getText();
         assertThat(text).isEqualTo(shortText);
@@ -40,7 +34,7 @@ public class MapperTest {
         String shortText = "txt" + "F".repeat(10);
         Post post = new Post().setText(shortText);
 
-        PostDto dto = mapper.mapPostShort(post);
+        PostDto dto = mapper.mapPostShort(post, MAX_TEXT_LENGTH);
 
         String text = dto.getText();
         assertThat(text).isEqualTo("txtFF...");

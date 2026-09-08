@@ -3,14 +3,13 @@ package org.isln.blog.controller;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
-
 import org.isln.blog.controller.dto.CommentDto;
 import org.isln.blog.controller.dto.PagedPostDto;
 import org.isln.blog.controller.dto.PostDto;
 import org.isln.blog.controller.mapper.EntityMapper;
 import org.isln.blog.service.CommentService;
 import org.isln.blog.service.PostService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,11 +25,22 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(value = "/api")
-@RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
     private final CommentService commentService;
     private final EntityMapper mapper;
+    private final Integer maxTextLengthInPagingPostResponse;
+
+    public PostController(
+            PostService postService,
+            CommentService commentService,
+            EntityMapper mapper,
+            @Value("${app.max-text-length-in-paging-post-response:128}") Integer maxTextLengthInPagingPostResponse) {
+        this.postService = postService;
+        this.commentService = commentService;
+        this.mapper = mapper;
+        this.maxTextLengthInPagingPostResponse = maxTextLengthInPagingPostResponse;
+    }
 
     @PostMapping("/posts")
     public PostDto create(@RequestBody PostDto post) {
@@ -43,7 +53,7 @@ public class PostController {
             @RequestParam Integer pageSize,
             @RequestParam(required = false) String search
     ) {
-        return mapper.map(postService.find(search, pageNumber - 1, pageSize));
+        return mapper.map(postService.find(search, pageNumber - 1, pageSize), maxTextLengthInPagingPostResponse);
     }
 
     @GetMapping("/posts/{id}")
@@ -53,7 +63,7 @@ public class PostController {
 
     @PutMapping("/posts/{id}/image")
     public ResponseEntity<byte[]> setImage(@RequestBody MultipartFile image, @PathVariable Long id) throws IOException {
-        byte[] file = postService.setImage(id, image.getName(), image.getBytes());
+        byte[] file = postService.setImage(id, image.getOriginalFilename(), image.getBytes());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(file);

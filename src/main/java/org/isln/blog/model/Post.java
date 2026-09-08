@@ -16,4 +16,15 @@ public class Post {
     private Set<String> tags;
     private Integer likesCount;
     private Integer commentsCount;
+
+    public String getTextShort(int charCount) {
+        if (text == null) {
+            return null;
+        }
+        if (text.length() < charCount) {
+            return text;
+        } else {
+            return text.substring(0, charCount) + "...";
+        }
+    }
 }
