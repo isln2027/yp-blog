@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -61,8 +62,8 @@ public class PostController {
         return mapper.map(postService.findById(id));
     }
 
-    @PutMapping("/posts/{id}/image")
-    public ResponseEntity<byte[]> setImage(@RequestBody MultipartFile image, @PathVariable Long id) throws IOException {
+    @PutMapping(value = "/posts/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<byte[]> setImage(@RequestPart MultipartFile image, @PathVariable Long id) throws IOException {
         byte[] file = postService.setImage(id, image.getOriginalFilename(), image.getBytes());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
