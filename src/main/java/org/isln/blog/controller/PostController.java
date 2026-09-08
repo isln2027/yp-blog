@@ -109,6 +109,11 @@ public class PostController {
         return mapper.map(commentService.findById(commentId));
     }
 
+    @PutMapping("/posts/{id}/comments/{commentId}")
+    public CommentDto updateComment(@PathVariable Long commentId, @RequestBody CommentDto commentDto) {
+        return mapper.map(commentService.update(mapper.map(commentDto)));
+    }
+
     @DeleteMapping("/posts/{id}/comments/{commentId}")
     public void deleteComment(@PathVariable Long commentId) {
         commentService.delete(commentId);
