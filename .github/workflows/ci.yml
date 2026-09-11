@@ -4,7 +4,7 @@ on:
   push:
     branches: [ '**' ]
   pull_request:
-    branches: [ master, m1s3 ]
+    branches: [ master, m3s4 ]
 
 jobs:
   test:
@@ -19,17 +19,10 @@ jobs:
         with:
           java-version: '21'
           distribution: 'corretto'
+          cache: 'gradle'
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
 
-      - name: Make mvnw executable
-        run: chmod +x ./mvnw
-
-      - name: Run tests
-        run: ./mvnw test
+      - name: Run tests with Gradle
+        run: ./gradlew test
