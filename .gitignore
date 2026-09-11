@@ -1,17 +1,16 @@
 HELP.md
 target/
 .DS_Store
-
-### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
 .run
-#.mvn/jvm.config
-#.mvn/maven.config
-#!.mvn/wrapper*
 .mvn/*
 !.mvn/wrapper/
 !.mvn/wrapper/maven-wrapper.properties
+
+.gradle
+build
+
 
