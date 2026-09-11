@@ -6,10 +6,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import tools.jackson.databind.json.JsonMapper;
 
-import org.isln.blog.configuration.ApplicationConfiguration;
-import org.isln.blog.configuration.DataSourceConfiguration;
-import org.isln.blog.configuration.MultipartConfiguration;
-import org.isln.blog.configuration.WebConfiguration;
 import org.isln.blog.controller.PostController;
 import org.isln.blog.model.Comment;
 import org.isln.blog.model.Post;
@@ -21,8 +17,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -39,16 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @EnableWebMvc
-@SpringJUnitConfig(
-        classes = {
-                ApplicationConfiguration.class,
-                DataSourceConfiguration.class,
-                MultipartConfiguration.class,
-                WebConfiguration.class
-        }
-)
 @WebAppConfiguration
-@TestPropertySource(locations = "classpath:test-application.properties")
 public class PostControllerTest {
     @Autowired
     private PostController postController;

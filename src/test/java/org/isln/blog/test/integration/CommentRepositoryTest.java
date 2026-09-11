@@ -3,8 +3,6 @@ package org.isln.blog.test.integration;
 import java.util.Collections;
 import java.util.List;
 
-import org.isln.blog.configuration.ApplicationConfiguration;
-import org.isln.blog.configuration.DataSourceConfiguration;
 import org.isln.blog.exceptions.ObjectNotFound;
 import org.isln.blog.exceptions.RepositoryException;
 import org.isln.blog.model.Comment;
@@ -15,14 +13,10 @@ import org.isln.blog.repository.post.PostRequestParameters;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringJUnitConfig(classes = {DataSourceConfiguration.class, ApplicationConfiguration.class})
-@TestPropertySource(locations = "classpath:test-application.properties")
 public class CommentRepositoryTest {
     @Autowired
     private CommentRepository commentRepository;

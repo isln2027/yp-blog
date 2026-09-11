@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.isln.blog.configuration.ApplicationConfiguration;
-import org.isln.blog.configuration.DataSourceConfiguration;
 import org.isln.blog.exceptions.ObjectNotFound;
 import org.isln.blog.exceptions.RepositoryException;
 import org.isln.blog.model.Comment;
@@ -20,14 +18,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringJUnitConfig(classes = {DataSourceConfiguration.class, ApplicationConfiguration.class})
-@TestPropertySource(locations = "classpath:test-application.properties")
 public class PostRepositoryTest {
     public static final String TAG_1 = "#tag1";
     public static final String TAG_2 = "#tag2";
