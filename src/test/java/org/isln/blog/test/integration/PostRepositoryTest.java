@@ -18,10 +18,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@SpringBootTest
 public class PostRepositoryTest {
     public static final String TAG_1 = "#tag1";
     public static final String TAG_2 = "#tag2";
@@ -167,6 +169,7 @@ public class PostRepositoryTest {
             return postRepository.create(new Post().setTitle("").setText("").setTags(Collections.emptySet()));
         }
     }
+
     @Nested
     class PostSearch {
 
