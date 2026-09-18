@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 
 import org.isln.blog.exceptions.FileOperationException;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,29 @@ public class FileSystemFileService implements FileService {
         }
     }
 
-    public static Path getUploadDirectory() {
+    @Override
+    public void deleteAllFiles() {
+        Path path = FileSystemFileService.getUploadDirectory();
+        try {
+            if (Files.exists(path)) {
+                try (var files = Files.walk(path)) {
+                    files.sorted(Comparator.reverseOrder())
+                            .forEach(p -> {
+                                        try {
+                                            Files.deleteIfExists(p);
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+                            );
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Path getUploadDirectory() {
         try {
             Path uploadDirectory = Paths.get("uploads", "posts");
             if (!Files.exists(uploadDirectory)) {

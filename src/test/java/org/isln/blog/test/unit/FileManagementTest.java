@@ -1,10 +1,5 @@
 package org.isln.blog.test.unit;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
-
 import org.isln.blog.service.file.FileService;
 import org.isln.blog.service.file.FileSystemFileService;
 import org.junit.jupiter.api.AfterEach;
@@ -14,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = FileService.class)
+@SpringBootTest(classes = FileSystemFileService.class)
 public class FileManagementTest {
     @Autowired
     private FileService fileService;
@@ -55,23 +50,6 @@ public class FileManagementTest {
 
     @AfterEach
     public void cleanup() {
-        Path path = FileSystemFileService.getUploadDirectory();
-        try {
-            if (Files.exists(path)) {
-                try (var files = Files.walk(path)) {
-                    files.sorted(Comparator.reverseOrder())
-                            .forEach(p -> {
-                                        try {
-                                            Files.deleteIfExists(p);
-                                        } catch (IOException e) {
-                                            throw new RuntimeException(e);
-                                        }
-                                    }
-                            );
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        fileService.deleteAllFiles();
     }
 }
