@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(classes = FileService.class)
 public class FileManagementTest {
     @Autowired
     private FileService fileService;
