@@ -2,8 +2,6 @@ package org.isln.blog.controller.mapper;
 
 import java.util.List;
 
-import lombok.Setter;
-
 import org.isln.blog.controller.dto.CommentDto;
 import org.isln.blog.controller.dto.PagedPostDto;
 import org.isln.blog.controller.dto.PostDto;
@@ -14,7 +12,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-@Setter
 @Mapper(componentModel = "spring")
 public abstract class EntityMapper {
     public abstract PostDto map(Post post);

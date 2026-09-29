@@ -6,17 +6,17 @@ import org.isln.blog.model.Post;
 import org.isln.blog.repository.post.PostRepository;
 import org.isln.blog.service.PostService;
 import org.isln.blog.service.dto.PagedPosts;
-import org.isln.blog.test.unit.configuration.TestConfiguration;
+import org.isln.blog.test.unit.configuration.ServiceTestConfiguration;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
-@SpringJUnitConfig(classes = {TestConfiguration.class})
+@SpringBootTest(classes = ServiceTestConfiguration.class)
 public class PostServiceTest {
     @Autowired
     private PostRepository postRepository;
